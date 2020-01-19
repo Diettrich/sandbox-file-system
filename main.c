@@ -110,9 +110,11 @@ int main()
 
         // test
         // printf("command: %s\n", command);
-        for (int i = 0; i < 3; i++)
+        int i = 0;
+        while(args[i] != NULL)
         {
             printf("%s\n", args[i]);
+            i++;
         }
         
 
