@@ -6,12 +6,13 @@
 
 struct file
 {
+    char name[128];
     int length;
     char *content;
 };
 struct directory
 {
-    char name[100];
+    char name[128];
     struct directory *fils;
     struct directory *frere;
 };
@@ -27,18 +28,19 @@ char *read_line()
     return line;
 }
 
-//parse line
-char **pasre_line(char *line)
+// parse string function
+char **FL_sh_pareser(char *line, char *delimiteur)
 {
     int bufsize = TOK_BUFSIZE, position = 0;
     // bufsize est le buffer responsable du stream
-    // de la commande et des arguments commançant
+    // de la commande + arguments en cas de parse
+    // de la ligne et la liste des passages d' un
+    // chemin (URL) en cas de parse du lien commançant
     // par 64 et ajouter par 64 à fur et à mesure
-    char *delimiteur = " \t\r\n\a";
+
     char *token;
     char **tokens = malloc(bufsize * sizeof(char *));
-    // tokens et la fragmentation de de la commande
-    // entier envers commande principale et argumuents
+    // tokens est la fragmentation de de la ligne ou URL
 
     // exception ou token non defini
     if (!tokens)
@@ -72,6 +74,21 @@ char **pasre_line(char *line)
     return tokens;
 }
 
+// parse line
+char **pasre_line(char *line)
+{
+    char *delimiteur = " \t\r\n\a";
+    return FL_sh_pareser(line, delimiteur);
+}
+
+// parse URL
+char **URLparser(char *line)
+{
+    char *delimiteur = "/";
+    return FL_sh_pareser(line, delimiteur);
+}
+
+
 int main()
 {
     // init /home/
@@ -100,7 +117,7 @@ int main()
     {
         printf("$ ");
         command = read_line();
-        args = pasre_line(command); 
+        args = pasre_line(command);
         status = 1; //execution ici qui retourne status >>> test status automatiquement 1
 
         if (!strcmp(args[0], exit))
@@ -111,12 +128,11 @@ int main()
         // test
         // printf("command: %s\n", command);
         int i = 0;
-        while(args[i] != NULL)
+        while (args[i] != NULL)
         {
             printf("%s\n", args[i]);
             i++;
         }
-        
 
         free(command);
         free(args);
