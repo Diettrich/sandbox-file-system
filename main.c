@@ -41,12 +41,21 @@ int execute(char **args, directory *current_position, directory root, directory 
     }
     else if (!strcmp(core_commande, "ls"))
     {
-        //return poorls(current_position);
-        return ls(argument_commande[0], *current_position, root);
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return ls(argument_commande[0], *current_position, root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
     }
     else if (!strcmp(core_commande, "cd"))
     {
-        return cd(argument_commande, current_position, root);
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return cd(argument_commande[0], current_position, root, home);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
     }
     else
     {
@@ -206,7 +215,6 @@ directory createDirectory(char *name, directory parent)
 // command ls
 int ls(char *url, directory position, directory root)
 {
-    // later bitchs
     directory tmp_position;
     if (url != NULL)
     {
@@ -214,17 +222,14 @@ int ls(char *url, directory position, directory root)
         if (strcmp(url, "/") == 0)
         {
             poorls(tmp_position);
-            free(tmp_position);
             return 1;
         }
-        char **url_names_array = URLparser(url);
+        const char **URL_NAMES_ARRAY = URLparser(url);
         int i = 0;
-        while (url_names_array[i] != NULL)
+        while (URL_NAMES_ARRAY[i] != NULL)
         {
-            //printf("<<  %s   %s  >>\n", url_names_array[i], tmp_position->name);
-            if (dirExiste(url_names_array[i], &tmp_position))
+            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
             {
-                //printf("<<  %s   %s  >>\n", url_names_array[i], tmp_position->name);
                 i++;
             }
             else
@@ -233,14 +238,11 @@ int ls(char *url, directory position, directory root)
                 return 1;
             }
         }
-        poorls(tmp_position);
-        free(tmp_position);
-        return 1;
+        return poorls(tmp_position);
     }
     else
     {
-        poorls(position);
-        return 1;
+        return poorls(position);
     }
     fprintf(stderr, "FL-sh: error ls\n");
     exit(EXIT_FAILURE);
@@ -255,6 +257,44 @@ int poorls(directory position)
         var = var->frere;
     }
     return 1;
+}
+
+// command cd : change directory
+int cd(char *url, directory *position, directory root, directory home)
+{
+    directory tmp_position;
+    if (url != NULL)
+    {
+        if (strcmp(url, "/") == 0)
+        {
+            *position = root;
+            return 1;
+        }
+        tmp_position = url[0] == '/' ? root : *position;
+        const char **URL_NAMES_ARRAY = URLparser(url);
+        int i = 0;
+        while (URL_NAMES_ARRAY[i] != NULL)
+        {
+            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
+            {
+                i++;
+            }
+            else
+            {
+                puts("repertoire non existant");
+                return 1;
+            }
+        }
+        *position = tmp_position;
+        return 1;
+    }
+    else
+    {
+        *position = home;
+        return 1;
+    }
+    fprintf(stderr, "FL-sh: error cd\n");
+    exit(EXIT_FAILURE);
 }
 
 // command mkdir: make directory
@@ -283,35 +323,6 @@ int mkdir(char *line, directory position, directory root)
     }
 
     return 1;
-}
-
-// command cd
-int cd(char *commande_arg, directory *position, directory root)
-{
-    char **arg = URLparser(commande_arg);
-    directory initial_position = *position;
-    if (arg[0] == NULL)
-    {
-        *position = changeDirectory("home", &root);
-    }
-    int isRelative = commande_arg[0] == '/' ? 0 : 1;
-    if (isRelative)
-    {
-        int i = 0;
-        while (arg[i] != NULL)
-        {
-            if (!dirExiste(arg[i], position))
-            {
-                *position = initial_position;
-                puts("repertoire introuvable");
-            }
-            i++;
-        }
-    }
-    else
-    {
-        /* code */
-    }
 }
 
 int main()
