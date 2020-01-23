@@ -4,20 +4,23 @@
 #define TOK_BUFSIZE 64
 #define READLINE_BUFSIZE 1024
 
-struct file
-{
-    char name[128];
-    int length;
-    char *content;
-};
 struct directory
 {
     char name[128];
+    char type[1];
+    char *content;
+    int contentlength;
     struct directory *fils;
     struct directory *frere;
+    struct directory *previous;
 };
-typedef struct file file;
 typedef struct directory *directory;
+
+int ls(char*, directory, directory);
+int cd(char*, directory*, directory, directory);
+int mkdir(char**, directory, directory, directory);
+int poorls(directory);
+int pwd(directory, directory);
 
 //read line // read
 char *read_line()
@@ -56,6 +59,14 @@ int execute(char **args, directory *current_position, directory root, directory 
         }
         puts("on ne traite pas 2 argument ou plus.");
         return 1;
+    }
+    else if (!strcmp(core_commande, "mkdir"))
+    {
+        return mkdir(argument_commande, *current_position, root, home);
+    }
+    else if (!strcmp(core_commande, "pwd"))
+    {
+        return pwd(*current_position, root);
     }
     else
     {
@@ -128,7 +139,7 @@ char **URLparser(char *line)
 
 // dirExist function(char *name, directory *position_temporere) return 1 si existe 0 sinon
 // et qui change la position tmp dans la fonction appelante vers nouvel position
-int dirExiste(char *name, directory *position)
+int dirExiste(const char *name, directory *position)
 {
     directory var = *position;
     if (var->fils == NULL)
@@ -147,7 +158,6 @@ int dirExiste(char *name, directory *position)
         if (strcmp(var->name, name) == 0)
         {
             *position = var;
-            printf("%s\n", (*position)->name);
             return 1;
         }
         var = var->frere;
@@ -155,48 +165,23 @@ int dirExiste(char *name, directory *position)
     return 0;
 }
 
-// cherche fils
-// directory searchFils(char *name, directory position)
-directory searchFils(char *name, directory position)
-{
-    if (position->fils == NULL)
-    {
-        return NULL;
-    }
-    if (strcmp(name, position->fils) == 0)
-    {
-        return position->fils;
-    }
-    position = position->fils;
-    while (position != NULL && strcmp(name, position->frere) != 0)
-    {
-        position = position->frere;
-    }
-    return position == NULL ? NULL : position;
-}
-
-// directory changeDirectory(char *name, directory position)
-directory changeDirectory(char *name, directory *position)
-{
-    *position = searchFils(name, *position);
-    return *position;
-}
-
-// directory createDirectory(char *name, directory parent)
+// int createDirectory(char *name, directory parent)
 // cree un repertoire de nom: name sous un repertoire parenr: parent
-directory createDirectory(char *name, directory parent)
+int createDirectory(const char *name, directory *parent)
 {
     directory var = malloc(sizeof(directory));
-    directory precedent = malloc(sizeof(directory));
+    directory present = malloc(sizeof(directory));
+    directory previous = malloc(sizeof(directory));
     strcpy(var->name, name);
-    strcpy(precedent->name, "..");
-    if (parent->fils == NULL)
+    strcpy(present->name, ".");
+    strcpy(previous->name, "..");
+    if ((*parent)->fils == NULL)
     {
-        parent->fils = var;
+        (*parent)->fils = var;
     }
     else
     {
-        directory dernier_fils = parent->fils;
+        directory dernier_fils = (*parent)->fils;
         while (dernier_fils->frere != NULL)
         {
             dernier_fils = dernier_fils->frere;
@@ -204,10 +189,16 @@ directory createDirectory(char *name, directory parent)
         dernier_fils->frere = var;
     }
     var->frere = NULL;
-    var->fils = precedent;
-    precedent->fils = parent->fils;
+    var->fils = present;
+    var->previous = *parent;
+    present->fils = var->fils;
+    present->frere = previous;
+    present->previous = *parent;
+    previous->fils = (*parent)->fils;
+    previous->frere = (*parent)->frere;
+    previous->previous = (*parent)->previous;
 
-    return var;
+    return 1;
 }
 
 // ----------------------------------------- COMMANDES -----------------------------------------
@@ -215,16 +206,16 @@ directory createDirectory(char *name, directory parent)
 // command ls
 int ls(char *url, directory position, directory root)
 {
-    directory tmp_position;
     if (url != NULL)
     {
+        directory tmp_position;
         tmp_position = url[0] == '/' ? root : position;
         if (strcmp(url, "/") == 0)
         {
             poorls(tmp_position);
             return 1;
         }
-        const char **URL_NAMES_ARRAY = URLparser(url);
+        const char **URL_NAMES_ARRAY = (const char**) URLparser(url);
         int i = 0;
         while (URL_NAMES_ARRAY[i] != NULL)
         {
@@ -271,12 +262,13 @@ int cd(char *url, directory *position, directory root, directory home)
             return 1;
         }
         tmp_position = url[0] == '/' ? root : *position;
-        const char **URL_NAMES_ARRAY = URLparser(url);
+        const char **URL_NAMES_ARRAY = (const char**) URLparser(url);
         int i = 0;
         while (URL_NAMES_ARRAY[i] != NULL)
         {
             if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
             {
+                //printf("%s\n", tmp_position->name);
                 i++;
             }
             else
@@ -298,30 +290,51 @@ int cd(char *url, directory *position, directory root, directory home)
 }
 
 // command mkdir: make directory
-int mkdir(char *line, directory position, directory root)
+int mkdir(char **args, directory position, directory root, directory home)
 {
-    directory tmp_posistion;
-    char **arg = URLparser(line);
-    int isRelative = line[0] == '/' ? 0 : 1;
-    int profondeur = 0;
-    int profondeur_max = 0;
-    while (arg[profondeur_max] != NULL)
+    if (args[0] == NULL)
     {
-        profondeur_max++;
+        puts("aucun repertoire saisie.");
+        return 1;
     }
-
-    if (isRelative)
-        tmp_posistion = position;
-    else
-        tmp_posistion = root;
-    while (dirExiste(arg[profondeur], &tmp_posistion))
-        profondeur++;
-    for (int i = profondeur; i < profondeur_max; i++)
+    int i = 0;
+    while (args[i] != NULL)
     {
-        createDirectory(arg[i], tmp_posistion);
-        changeDirectory(arg[i], &tmp_posistion);
+        const char **ARG_ARRAY = (const char**) URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
+        directory tmp_position = args[i][0] == '/' ? root: position;
+        if (strcmp(ARG_ARRAY[i], "/") == 0)
+        {
+            puts("opération impossible.");
+            return 1;
+        }
+        int j = 0;
+        while (dirExiste(ARG_ARRAY[j], &tmp_position))
+        {
+            j++;
+        }
+        while (ARG_ARRAY[j] != NULL)
+        {
+            // createdir
+            if (createDirectory(ARG_ARRAY[j], &tmp_position))
+            {
+                dirExiste(ARG_ARRAY[j], &tmp_position);
+            }
+            j++;
+        }
+        i++;
+        puts("done");
     }
+    return 1;
+}
 
+int pwd(directory position, directory root)
+{
+    if (position == root)
+    {
+        return 1;
+    }
+    pwd(position->previous, root);
+    printf("/%s", position->name);
     return 1;
 }
 
@@ -330,17 +343,36 @@ int main()
     // init /home/
     directory root = malloc(sizeof(directory));
     directory home = malloc(sizeof(directory));
-    directory home_to_root = malloc(sizeof(directory)); // precedent
+    directory rootpresent = malloc(sizeof(directory));
+    directory rootprevious = malloc(sizeof(directory));
+    directory homepresent = malloc(sizeof(directory));
+    directory homeprevious = malloc(sizeof(directory)); // precedent
 
     strcpy(root->name, "/");
     strcpy(home->name, "home");
-    strcpy(home_to_root->name, "..");
+    strcpy(rootpresent->name, ".");
+    strcpy(rootprevious->name, "..");
+    strcpy(homepresent->name, ".");
+    strcpy(homeprevious->name, "..");
 
-    root->fils = home;
+    root->fils = rootpresent;
     root->frere = NULL;
-    home->fils = home_to_root;
+    root->previous = root;
+    home->fils = homepresent;
     home->frere = NULL;
-    home_to_root->fils = root->fils;
+    home->previous = root;
+    rootpresent->frere = rootprevious;
+    rootpresent->fils = root->fils;
+    rootpresent->previous = root->previous;
+    rootprevious->frere = home;
+    rootprevious->fils = root->fils;
+    rootprevious->previous = root;
+    homepresent->frere = homeprevious;
+    homepresent->fils = home->fils;
+    homepresent->previous = root;
+    homeprevious->frere = NULL;
+    homeprevious->fils = root->fils;
+    homeprevious->previous = root;
 
     //pointeur position vers le lieu l utilisateur
     directory position = home;
@@ -358,7 +390,7 @@ int main()
         status = execute(args, &position, root, home);
         free(command);
         free(args);
-    } while (status == 1);
+    } while (status == 1); // LOOP
 
     return 0;
 }
