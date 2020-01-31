@@ -36,6 +36,14 @@ int execute(char **args, directory *current_position, directory root, directory 
 {
     char *core_commande = args[0];
     char **argument_commande = &args[1];
+    // int i=0;
+    // puts("====== debut de test");
+    // while (argument_commande[i]!=NULL)
+    // {
+    //     printf("%s\n", argument_commande[i]);
+    //     i++;
+    // }
+    // puts("====== fin de test");
     //directory *tmp_position;
 
     if (!strcmp(core_commande, "exit"))
@@ -141,12 +149,22 @@ char **URLparser(char *line)
 // et qui change la position tmp dans la fonction appelante vers nouvel position
 int dirExiste(const char *name, directory *position)
 {
+    printf("%s\n", name);
+    if (strcmp(name, ".") == 0)
+    {
+        return 1;
+    } else if (strcmp(name, "..") == 0)
+    {
+        puts("back");
+        *position = (*position)->previous;
+        return 1;
+    }
+    
     directory var = *position;
     if (var->fils == NULL)
     {
         return 0;
     }
-
     if (strcmp(var->fils->name, name) == 0)
     {
         *position = var->fils;
@@ -213,6 +231,7 @@ int ls(char *url, directory position, directory root)
         if (strcmp(url, "/") == 0)
         {
             poorls(tmp_position);
+            free(tmp_position);
             return 1;
         }
         const char **URL_NAMES_ARRAY = (const char**) URLparser(url);
@@ -226,6 +245,8 @@ int ls(char *url, directory position, directory root)
             else
             {
                 puts("repertoire non existant");
+                free(tmp_position);
+                free(URL_NAMES_ARRAY);
                 return 1;
             }
         }
@@ -259,6 +280,7 @@ int cd(char *url, directory *position, directory root, directory home)
         if (strcmp(url, "/") == 0)
         {
             *position = root;
+            free(tmp_position);
             return 1;
         }
         tmp_position = url[0] == '/' ? root : *position;
@@ -274,15 +296,20 @@ int cd(char *url, directory *position, directory root, directory home)
             else
             {
                 puts("repertoire non existant");
+                //free(tmp_position);
+                free(URL_NAMES_ARRAY);
                 return 1;
             }
         }
         *position = tmp_position;
+        //free(tmp_position);
+        free(URL_NAMES_ARRAY);
         return 1;
     }
     else
     {
         *position = home;
+        //free(tmp_position);
         return 1;
     }
     fprintf(stderr, "FL-sh: error cd\n");
@@ -302,12 +329,15 @@ int mkdir(char **args, directory position, directory root, directory home)
     {
         const char **ARG_ARRAY = (const char**) URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
         directory tmp_position = args[i][0] == '/' ? root: position;
-        if (strcmp(ARG_ARRAY[i], "/") == 0)
+        //printf("###%s\n", ARG_ARRAY[i]);
+        if (strcmp(args[i], "/") == 0)
         {
             puts("opération impossible.");
             return 1;
         }
         int j = 0;
+        printf("args[i] = %s\n",args[i]);
+        printf("ARG_ARR[j] = %s\n",ARG_ARRAY[j]);
         while (dirExiste(ARG_ARRAY[j], &tmp_position))
         {
             j++;
@@ -322,19 +352,23 @@ int mkdir(char **args, directory position, directory root, directory home)
             j++;
         }
         i++;
-        puts("done");
+        free(ARG_ARRAY);
+        //free(tmp_position);
+        //puts("done");
     }
     return 1;
 }
 
 int pwd(directory position, directory root)
 {
-    if (position == root)
-    {
-        return 1;
-    }
-    pwd(position->previous, root);
-    printf("/%s", position->name);
+    // if (position == root)
+    // {
+    //     return 1;
+    // }
+    // pwd(position->previous, root);
+    // printf("/%s", position->name);
+    printf("%s\n", position->name);
+    printf("%s\n", position->previous->name);
     return 1;
 }
 
@@ -388,6 +422,7 @@ int main()
         command = read_line();
         args = pasre_line(command);
         status = execute(args, &position, root, home);
+        printf("pos: %s\n", position->name);
         free(command);
         free(args);
     } while (status == 1); // LOOP
