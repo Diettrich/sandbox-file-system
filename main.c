@@ -155,7 +155,7 @@ int dirExiste(const char *name, directory *position)
         return 1;
     } else if (strcmp(name, "..") == 0)
     {
-        puts("back");
+        printf("back to %s\n", (*position)->previous->name);
         *position = (*position)->previous;
         return 1;
     }
@@ -188,11 +188,7 @@ int dirExiste(const char *name, directory *position)
 int createDirectory(const char *name, directory *parent)
 {
     directory var = malloc(sizeof(directory));
-    directory present = malloc(sizeof(directory));
-    directory previous = malloc(sizeof(directory));
     strcpy(var->name, name);
-    strcpy(present->name, ".");
-    strcpy(previous->name, "..");
     if ((*parent)->fils == NULL)
     {
         (*parent)->fils = var;
@@ -207,14 +203,8 @@ int createDirectory(const char *name, directory *parent)
         dernier_fils->frere = var;
     }
     var->frere = NULL;
-    var->fils = present;
+    var->fils = NULL;
     var->previous = *parent;
-    present->fils = var->fils;
-    present->frere = previous;
-    present->previous = *parent;
-    previous->fils = (*parent)->fils;
-    previous->frere = (*parent)->frere;
-    previous->previous = (*parent)->previous;
 
     return 1;
 }
@@ -329,15 +319,12 @@ int mkdir(char **args, directory position, directory root, directory home)
     {
         const char **ARG_ARRAY = (const char**) URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
         directory tmp_position = args[i][0] == '/' ? root: position;
-        //printf("###%s\n", ARG_ARRAY[i]);
         if (strcmp(args[i], "/") == 0)
         {
             puts("opération impossible.");
             return 1;
         }
         int j = 0;
-        printf("args[i] = %s\n",args[i]);
-        printf("ARG_ARR[j] = %s\n",ARG_ARRAY[j]);
         while (dirExiste(ARG_ARRAY[j], &tmp_position))
         {
             j++;
@@ -353,8 +340,6 @@ int mkdir(char **args, directory position, directory root, directory home)
         }
         i++;
         free(ARG_ARRAY);
-        //free(tmp_position);
-        //puts("done");
     }
     return 1;
 }
@@ -377,36 +362,16 @@ int main()
     // init /home/
     directory root = malloc(sizeof(directory));
     directory home = malloc(sizeof(directory));
-    directory rootpresent = malloc(sizeof(directory));
-    directory rootprevious = malloc(sizeof(directory));
-    directory homepresent = malloc(sizeof(directory));
-    directory homeprevious = malloc(sizeof(directory)); // precedent
 
     strcpy(root->name, "/");
     strcpy(home->name, "home");
-    strcpy(rootpresent->name, ".");
-    strcpy(rootprevious->name, "..");
-    strcpy(homepresent->name, ".");
-    strcpy(homeprevious->name, "..");
 
-    root->fils = rootpresent;
+    root->fils = home;
     root->frere = NULL;
     root->previous = root;
-    home->fils = homepresent;
+    home->fils = NULL;
     home->frere = NULL;
     home->previous = root;
-    rootpresent->frere = rootprevious;
-    rootpresent->fils = root->fils;
-    rootpresent->previous = root->previous;
-    rootprevious->frere = home;
-    rootprevious->fils = root->fils;
-    rootprevious->previous = root;
-    homepresent->frere = homeprevious;
-    homepresent->fils = home->fils;
-    homepresent->previous = root;
-    homeprevious->frere = NULL;
-    homeprevious->fils = root->fils;
-    homeprevious->previous = root;
 
     //pointeur position vers le lieu l utilisateur
     directory position = home;
