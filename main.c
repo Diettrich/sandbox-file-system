@@ -147,15 +147,20 @@ char **URLparser(char *line)
 
 // dirExist function(char *name, directory *position_temporere) return 1 si existe 0 sinon
 // et qui change la position tmp dans la fonction appelante vers nouvel position
-int dirExiste(const char *name, directory *position)
+int dirExiste(const char *name, directory *position, directory root)
 {
-    printf("%s\n", name);
+    //printf("%s\n", name);
     if (strcmp(name, ".") == 0)
     {
         return 1;
     } else if (strcmp(name, "..") == 0)
     {
-        printf("back to %s\n", (*position)->previous->name);
+        //printf("back to %s\n", (*position)->previous->name);
+        if (*position == root)
+        {
+            return 1;
+        }
+        
         *position = (*position)->previous;
         return 1;
     }
@@ -228,7 +233,7 @@ int ls(char *url, directory position, directory root)
         int i = 0;
         while (URL_NAMES_ARRAY[i] != NULL)
         {
-            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
+            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position, root))
             {
                 i++;
             }
@@ -278,7 +283,7 @@ int cd(char *url, directory *position, directory root, directory home)
         int i = 0;
         while (URL_NAMES_ARRAY[i] != NULL)
         {
-            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
+            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position, root))
             {
                 //printf("%s\n", tmp_position->name);
                 i++;
@@ -325,7 +330,7 @@ int mkdir(char **args, directory position, directory root, directory home)
             return 1;
         }
         int j = 0;
-        while (dirExiste(ARG_ARRAY[j], &tmp_position))
+        while (dirExiste(ARG_ARRAY[j], &tmp_position, root))
         {
             j++;
         }
@@ -334,7 +339,7 @@ int mkdir(char **args, directory position, directory root, directory home)
             // createdir
             if (createDirectory(ARG_ARRAY[j], &tmp_position))
             {
-                dirExiste(ARG_ARRAY[j], &tmp_position);
+                dirExiste(ARG_ARRAY[j], &tmp_position, root);
             }
             j++;
         }
