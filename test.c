@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void ggg(int *x) {
-    *x = 20;
+void ggg(int *_x) {
+    *_x = 20;
 }
 void f(int *a) {
     int b = 10;
