@@ -661,7 +661,7 @@ int cat(char **args, directory position, directory *_tmp_position, directory roo
         }
         if ((*_tmp_position)->type == 'f')
         {
-            printf("Contenu:\n %s\n", (*_tmp_position)->content);
+            printf("Contenu:\n%s", (*_tmp_position)->content);
         }
         else
         {
