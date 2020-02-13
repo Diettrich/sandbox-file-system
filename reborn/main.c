@@ -303,11 +303,9 @@ int removeNode(directory node)
     puts("removed");
     if (node->fils != NULL)
     {
-        puts("removed fils");
         removeNode(node->fils);
         if (node->fils->frere != NULL)
         {
-            puts("removed  frere");
             removeNode(node->frere);
         }
     }
@@ -324,7 +322,6 @@ int removeNode(directory node)
         }
         var->frere = node->frere;
     }
-    puts("segm");
     free(node);
     return 1;
 }
