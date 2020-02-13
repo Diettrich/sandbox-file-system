@@ -232,6 +232,33 @@ int addToNode(directory node, directory parent)
     return 1;
 }
 
+// int removeNode(directory node)
+// {
+//     if (node->fils != NULL)
+//         removeNode(node->fils);
+//     if (node->frere != NULL)
+//         removeNode(node->frere);
+//     if (node->previous->fils == node)
+//     {
+//         node->previous->fils = NULL;
+//     }
+//     else
+//     {
+//         directory var = node->previous->fils;
+//         while (var->frere != node && var != NULL)
+//         {
+//             var = var->frere;
+//             if (var == NULL)
+//             {
+//                 puts("ERREUR rm");
+//                 return 0;
+//             }
+//         }
+        
+//     }
+    
+// }
+
 // ----------------------------------------- COMMANDES -----------------------------------------
 
 // command ls
@@ -269,6 +296,7 @@ int ls(char *url, directory _position, directory *_tmp_position, directory root)
     fprintf(stderr, "FL-sh: error ls\n");
     exit(EXIT_FAILURE);
 }
+
 
 int poorls(directory position)
 {
@@ -409,7 +437,6 @@ int cp(char* path1, char* path2, directory position, directory* _tmp_position, d
     copy->fils = (*_tmp_position)->fils;
     copy->previous = (*_tmp_position)->previous;
     copy->type = (*_tmp_position)->type;
-    //printf("%s\n", copy->name);
 
     //########## remake ##########
     if (strcmp(path2, "/") == 0)
@@ -444,6 +471,34 @@ int cp(char* path1, char* path2, directory position, directory* _tmp_position, d
     free(PATH2_ARRAY);
     addToNode(copy, *_tmp_position);
     return 1;
+}
+
+int remove(char* path, directory position, directory* _tmp_position, directory root)
+{
+    if (strcmp(path, "/") == 0)
+    {
+        puts("opération impossible.");
+        return 1;
+    }
+    *_tmp_position = path[0] == '/' ? root : position;
+    const char **PATH_ARRAY = (const char **)URLparser(path);
+    int i = 0;
+    while (PATH_ARRAY[i] != NULL)
+    {
+        if (dirExiste(PATH_ARRAY[i], _tmp_position, root))
+        {
+            i++;
+        }
+        else
+        {
+            puts("repertoire non existant");
+            free(PATH_ARRAY);
+            return 1;
+        }
+    }
+    //*_tmp_position = (*_tmp_position)->previous;
+
+    free(PATH_ARRAY);
 }
 
 //################################### MAIN ###################################
