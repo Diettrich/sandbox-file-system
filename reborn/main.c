@@ -68,8 +68,36 @@ int execute(char **args, directory *current_position, directory *__tmp_position,
             puts("cp necessite 2 arguments.");
             return 1;
         }
-        
+
         return cp(argument_commande[0], argument_commande[1], *current_position, __tmp_position, root);
+    }
+    else if (!strcmp(core_commande, "rm"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return removeDirectory(argument_commande[0], *current_position, __tmp_position, root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "find"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return find(*current_position, argument_commande[0], root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "mv"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL) || argument_commande[2] != NULL)
+        {
+            puts("mv necessite 2 arguments.");
+            return 1;
+        }
+
+        return move(argument_commande[0], argument_commande[1], *current_position, __tmp_position, root);
     }
     else
     {
@@ -197,6 +225,7 @@ int createDirectory(const char *name, directory parent)
     var->fils = NULL;
     var->previous = parent;
     var->type = 'd';
+    var->content = "";
     if ((parent)->fils == NULL)
     {
         (parent)->fils = var;
@@ -232,32 +261,36 @@ int addToNode(directory node, directory parent)
     return 1;
 }
 
-// int removeNode(directory node)
-// {
-//     if (node->fils != NULL)
-//         removeNode(node->fils);
-//     if (node->frere != NULL)
-//         removeNode(node->frere);
-//     if (node->previous->fils == node)
-//     {
-//         node->previous->fils = NULL;
-//     }
-//     else
-//     {
-//         directory var = node->previous->fils;
-//         while (var->frere != node && var != NULL)
-//         {
-//             var = var->frere;
-//             if (var == NULL)
-//             {
-//                 puts("ERREUR rm");
-//                 return 0;
-//             }
-//         }
-        
-//     }
-    
-// }
+int removeNode(directory node)
+{
+    puts("removed");
+    if (node->fils != NULL)
+    {
+        puts("removed fils");
+        removeNode(node->fils);
+        if (node->fils->frere != NULL)
+        {
+            puts("removed  frere");
+            removeNode(node->frere);
+        }
+    }
+    if (node->previous->fils == node)
+    {
+        node->previous->fils = node->frere;
+    }
+    else
+    {
+        directory var = node->previous->fils;
+        while (var->frere != node && var != NULL)
+        {
+            var = var->frere;
+        }
+        var->frere = node->frere;
+    }
+    puts("segm");
+    free(node);
+    return 1;
+}
 
 // ----------------------------------------- COMMANDES -----------------------------------------
 
@@ -296,7 +329,6 @@ int ls(char *url, directory _position, directory *_tmp_position, directory root)
     fprintf(stderr, "FL-sh: error ls\n");
     exit(EXIT_FAILURE);
 }
-
 
 int poorls(directory position)
 {
@@ -407,7 +439,7 @@ int pwd(directory position, directory root, int c)
     return 1;
 }
 
-int cp(char* path1, char* path2, directory position, directory* _tmp_position, directory root)
+int cp(char *path1, char *path2, directory position, directory *_tmp_position, directory root)
 {
     if (strcmp(path1, "/") == 0)
     {
@@ -473,7 +505,7 @@ int cp(char* path1, char* path2, directory position, directory* _tmp_position, d
     return 1;
 }
 
-int remove(char* path, directory position, directory* _tmp_position, directory root)
+int removeDirectory(char *path, directory position, directory *_tmp_position, directory root)
 {
     if (strcmp(path, "/") == 0)
     {
@@ -496,9 +528,35 @@ int remove(char* path, directory position, directory* _tmp_position, directory r
             return 1;
         }
     }
-    //*_tmp_position = (*_tmp_position)->previous;
-
+    removeNode(*_tmp_position);
     free(PATH_ARRAY);
+    return 1;
+}
+
+int find(directory position, char *name, directory root)
+{
+    if (!strcmp(position->name, name))
+    {
+        return pwd(position, root, 0);
+    }
+
+    if (position->frere != NULL)
+    {
+        return find(position->frere, name, root);
+    }
+    if (position->fils != NULL)
+    {
+        return find(position->fils, name, root);
+    }
+    puts("aucun reportoire ou fichier de se nom.");
+    return 1;
+}
+
+int move(char *path1, char *path2, directory position, directory *_tmp_position, directory root)
+{
+    cp(path1, path2, position, _tmp_position, root);
+    removeDirectory(path1, position, _tmp_position, root);
+    return 1;
 }
 
 //################################### MAIN ###################################
