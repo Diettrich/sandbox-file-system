@@ -1,0 +1,3 @@
+/Users/anouarzougrar/CLionProjects/File-System--MSIP/cmake-build-debug/CMakeFiles/File_System__MSIP.dir
+/Users/anouarzougrar/CLionProjects/File-System--MSIP/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/anouarzougrar/CLionProjects/File-System--MSIP/cmake-build-debug/CMakeFiles/rebuild_cache.dir

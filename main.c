@@ -7,22 +7,15 @@
 struct directory
 {
     char name[128];
-    char type[1];
+    char type;
     char *content;
-    int contentlength;
     struct directory *fils;
     struct directory *frere;
     struct directory *previous;
 };
 typedef struct directory *directory;
 
-int ls(char*, directory, directory);
-int cd(char*, directory*, directory, directory);
-int mkdir(char**, directory, directory, directory);
-int poorls(directory);
-int pwd(directory, directory);
-
-//read line // read
+//read line
 char *read_line()
 {
     size_t bufsize = READLINE_BUFSIZE;
@@ -31,49 +24,6 @@ char *read_line()
     return line;
 }
 
-// execute function // eval && print
-int execute(char **args, directory *current_position, directory root, directory home)
-{
-    char *core_commande = args[0];
-    char **argument_commande = &args[1];
-    //directory *tmp_position;
-
-    if (!strcmp(core_commande, "exit"))
-    {
-        return 0;
-    }
-    else if (!strcmp(core_commande, "ls"))
-    {
-        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
-        {
-            return ls(argument_commande[0], *current_position, root);
-        }
-        puts("on ne traite pas 2 argument ou plus.");
-        return 1;
-    }
-    else if (!strcmp(core_commande, "cd"))
-    {
-        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
-        {
-            return cd(argument_commande[0], current_position, root, home);
-        }
-        puts("on ne traite pas 2 argument ou plus.");
-        return 1;
-    }
-    else if (!strcmp(core_commande, "mkdir"))
-    {
-        return mkdir(argument_commande, *current_position, root, home);
-    }
-    else if (!strcmp(core_commande, "pwd"))
-    {
-        return pwd(*current_position, root);
-    }
-    else
-    {
-        puts("command non existante");
-        return 1;
-    }
-}
 
 // parse string function
 char **FL_sh_pareser(char *line, char *delimiteur)
@@ -122,7 +72,7 @@ char **FL_sh_pareser(char *line, char *delimiteur)
 }
 
 // parse line
-char **pasre_line(char *line)
+char **parse_line(char *line)
 {
     char *delimiteur = " \t\r\n\a";
     return FL_sh_pareser(line, delimiteur);
@@ -139,17 +89,36 @@ char **URLparser(char *line)
 
 // dirExist function(char *name, directory *position_temporere) return 1 si existe 0 sinon
 // et qui change la position tmp dans la fonction appelante vers nouvel position
-int dirExiste(const char *name, directory *position)
+int dirExiste(const char *name, directory *_position, directory root)
 {
-    directory var = *position;
+    if (_position == NULL)
+    {
+        fprintf(stderr, "FL-sh: POSITION POINTER NOT FOUND\n");
+        exit(EXIT_FAILURE);
+    }
+    if (strcmp(name, ".") == 0)
+    {
+        return 1;
+    }
+    else if (strcmp(name, "..") == 0)
+    {
+        if (*_position == root)
+        {
+            return 1;
+        }
+
+        *_position = (*_position)->previous;
+        return 1;
+    }
+
+    directory var = *_position;
     if (var->fils == NULL)
     {
         return 0;
     }
-
     if (strcmp(var->fils->name, name) == 0)
     {
-        *position = var->fils;
+        *_position = var->fils;
         return 1;
     }
     var = var->fils;
@@ -157,7 +126,7 @@ int dirExiste(const char *name, directory *position)
     {
         if (strcmp(var->name, name) == 0)
         {
-            *position = var;
+            *_position = var;
             return 1;
         }
         var = var->frere;
@@ -167,77 +136,105 @@ int dirExiste(const char *name, directory *position)
 
 // int createDirectory(char *name, directory parent)
 // cree un repertoire de nom: name sous un repertoire parenr: parent
-int createDirectory(const char *name, directory *parent)
+int createDirectory(const char *name, directory parent)
 {
     directory var = malloc(sizeof(directory));
-    directory present = malloc(sizeof(directory));
-    directory previous = malloc(sizeof(directory));
     strcpy(var->name, name);
-    strcpy(present->name, ".");
-    strcpy(previous->name, "..");
-    if ((*parent)->fils == NULL)
+    var->frere = NULL;
+    var->fils = NULL;
+    var->previous = parent;
+    var->type = 'd';
+    var->content = "";
+    if ((parent)->fils == NULL)
     {
-        (*parent)->fils = var;
+        (parent)->fils = var;
     }
     else
     {
-        directory dernier_fils = (*parent)->fils;
+        directory dernier_fils = (parent)->fils;
         while (dernier_fils->frere != NULL)
         {
             dernier_fils = dernier_fils->frere;
         }
         dernier_fils->frere = var;
     }
-    var->frere = NULL;
-    var->fils = present;
-    var->previous = *parent;
-    present->fils = var->fils;
-    present->frere = previous;
-    present->previous = *parent;
-    previous->fils = (*parent)->fils;
-    previous->frere = (*parent)->frere;
-    previous->previous = (*parent)->previous;
 
     return 1;
 }
 
-// ----------------------------------------- COMMANDES -----------------------------------------
-
-// command ls
-int ls(char *url, directory position, directory root)
+int createFile(const char *name, directory parent)
 {
-    if (url != NULL)
+    directory var = malloc(sizeof(directory));
+    strcpy(var->name, name);
+    var->frere = NULL;
+    var->fils = NULL;
+    var->previous = parent;
+    var->type = 'f';
+    var->content = "";
+    if ((parent)->fils == NULL)
     {
-        directory tmp_position;
-        tmp_position = url[0] == '/' ? root : position;
-        if (strcmp(url, "/") == 0)
-        {
-            poorls(tmp_position);
-            return 1;
-        }
-        const char **URL_NAMES_ARRAY = (const char**) URLparser(url);
-        int i = 0;
-        while (URL_NAMES_ARRAY[i] != NULL)
-        {
-            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
-            {
-                i++;
-            }
-            else
-            {
-                puts("repertoire non existant");
-                return 1;
-            }
-        }
-        return poorls(tmp_position);
+        (parent)->fils = var;
     }
     else
     {
-        return poorls(position);
+        directory dernier_fils = (parent)->fils;
+        while (dernier_fils->frere != NULL)
+        {
+            dernier_fils = dernier_fils->frere;
+        }
+        dernier_fils->frere = var;
     }
-    fprintf(stderr, "FL-sh: error ls\n");
-    exit(EXIT_FAILURE);
+
+    return 1;
 }
+
+int addToNode(directory node, directory parent)
+{
+    if ((parent)->fils == NULL)
+    {
+        (parent)->fils = node;
+    }
+    else
+    {
+        directory dernier_fils = (parent)->fils;
+        while (dernier_fils->frere != NULL)
+        {
+            dernier_fils = dernier_fils->frere;
+        }
+        dernier_fils->frere = node;
+    }
+    return 1;
+}
+
+int removeNode(directory node)
+{
+    puts("removed");
+    if (node->fils != NULL)
+    {
+        removeNode(node->fils);
+        if (node->fils->frere != NULL)
+        {
+            removeNode(node->frere);
+        }
+    }
+    if (node->previous->fils == node)
+    {
+        node->previous->fils = node->frere;
+    }
+    else
+    {
+        directory var = node->previous->fils;
+        while (var->frere != node && var != NULL)
+        {
+            var = var->frere;
+        }
+        var->frere = node->frere;
+    }
+    free(node);
+    return 1;
+}
+
+// ----------------------------------------- COMMANDES -----------------------------------------
 
 int poorls(directory position)
 {
@@ -250,10 +247,45 @@ int poorls(directory position)
     return 1;
 }
 
-// command cd : change directory
-int cd(char *url, directory *position, directory root, directory home)
+// command ls
+int ls(char *url, directory _position, directory *_tmp_position, directory root)
 {
-    directory tmp_position;
+    if (url != NULL)
+    {
+        *_tmp_position = url[0] == '/' ? root : _position;
+        if (strcmp(url, "/") == 0)
+        {
+            poorls(*_tmp_position);
+            return 1;
+        }
+        const char **URL_NAMES_ARRAY = (const char **)URLparser(url);
+        int i = 0;
+        while (URL_NAMES_ARRAY[i] != NULL)
+        {
+            if (dirExiste(URL_NAMES_ARRAY[i], _tmp_position, root))
+            {
+                i++;
+            }
+            else
+            {
+                puts("repertoire non existant");
+                free(URL_NAMES_ARRAY);
+                return 1;
+            }
+        }
+        return poorls(_tmp_position);
+    }
+    else
+    {
+        return poorls(_position);
+    }
+    fprintf(stderr, "FL-sh: error ls\n");
+    exit(EXIT_FAILURE);
+}
+
+// command cd : change directory
+int cd(char *url, directory *position, directory *_tmp_position, directory root, directory home)
+{
     if (url != NULL)
     {
         if (strcmp(url, "/") == 0)
@@ -261,23 +293,24 @@ int cd(char *url, directory *position, directory root, directory home)
             *position = root;
             return 1;
         }
-        tmp_position = url[0] == '/' ? root : *position;
-        const char **URL_NAMES_ARRAY = (const char**) URLparser(url);
+        *_tmp_position = url[0] == '/' ? root : *position;
+        const char **URL_NAMES_ARRAY = (const char **)URLparser(url);
         int i = 0;
         while (URL_NAMES_ARRAY[i] != NULL)
         {
-            if (dirExiste(URL_NAMES_ARRAY[i], &tmp_position))
+            if (dirExiste(URL_NAMES_ARRAY[i], _tmp_position, root))
             {
-                //printf("%s\n", tmp_position->name);
                 i++;
             }
             else
             {
                 puts("repertoire non existant");
+                free(URL_NAMES_ARRAY);
                 return 1;
             }
         }
-        *position = tmp_position;
+        *position = *_tmp_position;
+        free(URL_NAMES_ARRAY);
         return 1;
     }
     else
@@ -290,7 +323,7 @@ int cd(char *url, directory *position, directory root, directory home)
 }
 
 // command mkdir: make directory
-int mkdir(char **args, directory position, directory root, directory home)
+int mkdir(char **args, directory position, directory *_tmp_position, directory root, directory home)
 {
     if (args[0] == NULL)
     {
@@ -300,82 +333,410 @@ int mkdir(char **args, directory position, directory root, directory home)
     int i = 0;
     while (args[i] != NULL)
     {
-        const char **ARG_ARRAY = (const char**) URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
-        directory tmp_position = args[i][0] == '/' ? root: position;
-        if (strcmp(ARG_ARRAY[i], "/") == 0)
+        const char **ARG_ARRAY = (const char **)URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
+        *_tmp_position = args[i][0] == '/' ? root : position;
+        if (strcmp(args[i], "/") == 0)
         {
             puts("opération impossible.");
             return 1;
         }
         int j = 0;
-        while (dirExiste(ARG_ARRAY[j], &tmp_position))
+        while (dirExiste(ARG_ARRAY[j], _tmp_position, root))
         {
             j++;
         }
         while (ARG_ARRAY[j] != NULL)
         {
             // createdir
-            if (createDirectory(ARG_ARRAY[j], &tmp_position))
+            if (createDirectory(ARG_ARRAY[j], *_tmp_position))
             {
-                dirExiste(ARG_ARRAY[j], &tmp_position);
+                dirExiste(ARG_ARRAY[j], _tmp_position, root);
             }
             j++;
         }
         i++;
-        puts("done");
+        free(ARG_ARRAY);
     }
     return 1;
 }
 
-int pwd(directory position, directory root)
+int touch(char **args, directory position, directory *_tmp_position, directory root, directory home)
 {
-    if (position == root)
+    if (args[0] == NULL)
     {
+        puts("aucun fichier saisie.");
         return 1;
     }
-    pwd(position->previous, root);
-    printf("/%s", position->name);
+    int i = 0;
+    while (args[i] != NULL)
+    {
+        const char **ARG_ARRAY = (const char **)URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
+        *_tmp_position = args[i][0] == '/' ? root : position;
+        if (strcmp(args[i], "/") == 0)
+        {
+            puts("opération impossible.");
+            return 1;
+        }
+        int j = 0;
+        while (dirExiste(ARG_ARRAY[j], _tmp_position, root))
+        {
+            j++;
+        }
+        if (ARG_ARRAY[j + 1] == NULL)
+        {
+            createFile(ARG_ARRAY[j], *_tmp_position);
+        }
+        else
+        {
+            puts("format erroné.");
+        }
+        i++;
+        free(ARG_ARRAY);
+    }
     return 1;
 }
 
-int main()
+int pwd(directory position, directory root, int c)
 {
-    // init /home/
-    directory root = malloc(sizeof(directory));
-    directory home = malloc(sizeof(directory));
-    directory rootpresent = malloc(sizeof(directory));
-    directory rootprevious = malloc(sizeof(directory));
-    directory homepresent = malloc(sizeof(directory));
-    directory homeprevious = malloc(sizeof(directory)); // precedent
+    if (position != root)
+    {
+        pwd(position->previous, root, 1);
+    }
+    if (c == 0)
+    {
+        printf("/%s\n", position->name);
+    }
+    else
+    {
+        if (position != root)
+        {
+            printf("/%s", position->name);
+        }
+    }
+
+    return 1;
+}
+
+int cp(char *path1, char *path2, directory position, directory *_tmp_position, directory root)
+{
+    if (strcmp(path1, "/") == 0)
+    {
+        puts("opération impossible.");
+        return 1;
+    }
+    *_tmp_position = path1[0] == '/' ? root : position;
+    const char **PATH1_ARRAY = (const char **)URLparser(path1);
+    int i = 0;
+    while (PATH1_ARRAY[i] != NULL)
+    {
+        if (dirExiste(PATH1_ARRAY[i], _tmp_position, root))
+        {
+            i++;
+        }
+        else
+        {
+            puts("repertoire non existant");
+            free(PATH1_ARRAY);
+            return 1;
+        }
+    }
+    free(PATH1_ARRAY);
+    directory copy = (directory)malloc(sizeof(directory));
+    strcpy(copy->name, (*_tmp_position)->name);
+    copy->frere = NULL;
+    copy->fils = (*_tmp_position)->fils;
+    copy->previous = (*_tmp_position)->previous;
+    copy->type = (*_tmp_position)->type;
+
+    //########## remake ##########
+    if (strcmp(path2, "/") == 0)
+    {
+        addToNode(copy, root);
+        return 1;
+    }
+    *_tmp_position = path2[0] == '/' ? root : position;
+    const char **PATH2_ARRAY = (const char **)URLparser(path2);
+    i = 0;
+    //puts("ok");
+    while (PATH2_ARRAY[i] != NULL)
+    {
+        if (dirExiste(PATH2_ARRAY[i], _tmp_position, root))
+        {
+            i++;
+        }
+        else if (PATH2_ARRAY[i + 1] == NULL)
+        {
+            strcpy(copy->name, PATH2_ARRAY[i]);
+            addToNode(copy, *_tmp_position);
+            free(PATH2_ARRAY);
+            return 1;
+        }
+        else
+        {
+            puts("repertoire non existant");
+            free(PATH2_ARRAY);
+            return 1;
+        }
+    }
+    free(PATH2_ARRAY);
+    addToNode(copy, *_tmp_position);
+    return 1;
+}
+
+int removeDirectory(char *path, directory position, directory *_tmp_position, directory root)
+{
+    if (strcmp(path, "/") == 0)
+    {
+        puts("opération impossible.");
+        return 1;
+    }
+    *_tmp_position = path[0] == '/' ? root : position;
+    const char **PATH_ARRAY = (const char **)URLparser(path);
+    int i = 0;
+    while (PATH_ARRAY[i] != NULL)
+    {
+        if (dirExiste(PATH_ARRAY[i], _tmp_position, root))
+        {
+            i++;
+        }
+        else
+        {
+            puts("repertoire non existant");
+            free(PATH_ARRAY);
+            return 1;
+        }
+    }
+    removeNode(*_tmp_position);
+    free(PATH_ARRAY);
+    return 1;
+}
+
+int find(directory position, char *name, directory root)
+{
+    if (!strcmp(position->name, name))
+    {
+        return pwd(position, root, 0);
+    }
+
+    if (position->frere != NULL)
+    {
+        return find(position->frere, name, root);
+    }
+    if (position->fils != NULL)
+    {
+        return find(position->fils, name, root);
+    }
+    puts("aucun reportoire ou fichier de se nom.");
+    return 1;
+}
+
+int move(char *path1, char *path2, directory position, directory *_tmp_position, directory root)
+{
+    cp(path1, path2, position, _tmp_position, root);
+    removeDirectory(path1, position, _tmp_position, root);
+    return 1;
+}
+
+int cat(char **args, directory position, directory *_tmp_position, directory root, directory home)
+{
+    if (args[0] == NULL)
+    {
+        puts("aucun fichier saisie.");
+        return 1;
+    }
+    int i = 0;
+    while (args[i] != NULL)
+    {
+        const char **ARG_ARRAY = (const char **)URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
+        *_tmp_position = args[i][0] == '/' ? root : position;
+        if (strcmp(args[i], "/") == 0)
+        {
+            puts("opération impossible.");
+            return 1;
+        }
+        int j = 0;
+        //printf("%s\n", ARG_ARRAY[j]);
+        while (dirExiste(ARG_ARRAY[j], _tmp_position, root))
+        {
+            j++;
+            if (ARG_ARRAY[j] == NULL)
+            {
+                break;
+            }
+        }
+        if ((*_tmp_position)->type == 'f')
+        {
+            printf("Contenu:\n%s", (*_tmp_position)->content);
+        }
+        else
+        {
+            puts("Ce n'est pas un fichier");
+        }
+        i++;
+        free(ARG_ARRAY);
+    }
+    return 1;
+}
+
+int write(char **args, directory position, directory *_tmp_position, directory root, directory home)
+{
+    if (args[0] == NULL)
+    {
+        puts("aucun fichier saisie.");
+        return 1;
+    }
+    int i = 0;
+    while (args[i] != NULL)
+    {
+        const char **ARG_ARRAY = (const char **)URLparser(args[i]); // /anouar/zougrar => {anouar, zougrar}
+        *_tmp_position = args[i][0] == '/' ? root : position;
+        if (strcmp(args[i], "/") == 0)
+        {
+            puts("opération impossible.");
+            return 1;
+        }
+        int j = 0;
+        //printf("%s\n", ARG_ARRAY[j]);
+        while (dirExiste(ARG_ARRAY[j], _tmp_position, root))
+        {
+            j++;
+            if (ARG_ARRAY[j] == NULL)
+            {
+                break;
+            }
+        }
+        if ((*_tmp_position)->type == 'f')
+        {
+            (*_tmp_position)->content = read_line();
+        }
+        else
+        {
+            puts("Ce n'est pas un fichier");
+        }
+        i++;
+        free(ARG_ARRAY);
+    }
+    return 1;
+}
+
+// execute command
+int execute(char **args, directory *current_position, directory *__tmp_position, directory root, directory home)
+{
+    char *core_commande = args[0];
+    char **argument_commande = &args[1];
+
+    if (!strcmp(core_commande, "exit"))
+    {
+        return 0;
+    }
+    else if (!strcmp(core_commande, "ls"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return ls(argument_commande[0], *current_position, __tmp_position, root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "cd"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return cd(argument_commande[0], current_position, __tmp_position, root, home);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "mkdir"))
+    {
+        return mkdir(argument_commande, *current_position, __tmp_position, root, home);
+    }
+    else if (!strcmp(core_commande, "touch"))
+    {
+        return touch(argument_commande, *current_position, __tmp_position, root, home);
+    }
+    else if (!strcmp(core_commande, "cat"))
+    {
+        return cat(argument_commande, *current_position, __tmp_position, root, home);
+    }
+    else if (!strcmp(core_commande, "write"))
+    {
+        return write(argument_commande, *current_position, __tmp_position, root, home);
+    }
+    else if (!strcmp(core_commande, "pwd"))
+    {
+        return pwd(*current_position, root, 0);
+    }
+    else if (!strcmp(core_commande, "cp"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL) || argument_commande[2] != NULL)
+        {
+            puts("cp necessite 2 arguments.");
+            return 1;
+        }
+
+        return cp(argument_commande[0], argument_commande[1], *current_position, __tmp_position, root);
+    }
+    else if (!strcmp(core_commande, "rm"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return removeDirectory(argument_commande[0], *current_position, __tmp_position, root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "find"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL))
+        {
+            return find(*current_position, argument_commande[0], root);
+        }
+        puts("on ne traite pas 2 argument ou plus.");
+        return 1;
+    }
+    else if (!strcmp(core_commande, "mv"))
+    {
+        if (argument_commande[0] == NULL || (argument_commande[0] != NULL && argument_commande[1] == NULL) || argument_commande[2] != NULL)
+        {
+            puts("mv necessite 2 arguments.");
+            return 1;
+        }
+
+        return move(argument_commande[0], argument_commande[1], *current_position, __tmp_position, root);
+    }
+    else
+    {
+        puts("command non existante");
+        return 1;
+    }
+}
+
+//################################### MAIN ###################################
+int main(int argc, char const *argv[])
+{
+    // init  /home/
+    const directory root = (directory)malloc(sizeof(directory));
+    const directory home = (directory)malloc(sizeof(directory));
+    directory position = (directory)malloc(sizeof(directory));
+    directory tmp_position = (directory)malloc(sizeof(directory));
 
     strcpy(root->name, "/");
     strcpy(home->name, "home");
-    strcpy(rootpresent->name, ".");
-    strcpy(rootprevious->name, "..");
-    strcpy(homepresent->name, ".");
-    strcpy(homeprevious->name, "..");
 
-    root->fils = rootpresent;
+    root->fils = home;
     root->frere = NULL;
     root->previous = root;
-    home->fils = homepresent;
+    root->type = 'd';
+
+    home->fils = NULL;
     home->frere = NULL;
     home->previous = root;
-    rootpresent->frere = rootprevious;
-    rootpresent->fils = root->fils;
-    rootpresent->previous = root->previous;
-    rootprevious->frere = home;
-    rootprevious->fils = root->fils;
-    rootprevious->previous = root;
-    homepresent->frere = homeprevious;
-    homepresent->fils = home->fils;
-    homepresent->previous = root;
-    homeprevious->frere = NULL;
-    homeprevious->fils = root->fils;
-    homeprevious->previous = root;
+    home->type = 'd';
 
     //pointeur position vers le lieu l utilisateur
-    directory position = home;
+    position = home;
+    tmp_position = position;
 
     //REPL system (read eval print loop)
     char *command;
@@ -384,10 +745,16 @@ int main()
 
     do
     {
-        printf("$ ");
-        command = read_line();
-        args = pasre_line(command);
-        status = execute(args, &position, root, home);
+        printf("\033[01;33m");
+        printf("ENIM");
+        printf("\033[1;34m");
+        printf("FS");
+        printf("\033[0m");
+        printf("-%s $ ", position->name);
+        command = read_line(); // READ
+        args = parse_line(command);
+        status = execute(args, &position, &tmp_position, root, home); //EVAL  & PRINT
+        tmp_position = position;
         free(command);
         free(args);
     } while (status == 1); // LOOP
