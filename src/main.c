@@ -4,7 +4,5 @@
 #include "shell.h"
 
 int main(int argc, char const *argv[]) {
-    run_shell();
-
-    return 0;
+    return run_shell();
 }
