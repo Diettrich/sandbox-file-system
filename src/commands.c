@@ -2,8 +2,8 @@
 // Created by Anouar Zougrar on 7/1/2024.
 //
 
-#ifndef FILE_SYSTEM__MSIP_COMMANDS_C
-#define FILE_SYSTEM__MSIP_COMMANDS_C
+#ifndef SANDBOX_FILE_SYSTEM_COMMANDS_C
+#define SANDBOX_FILE_SYSTEM_COMMANDS_C
 
 #include <string.h>
 #include <stdlib.h>
@@ -75,4 +75,4 @@ struct Command parse_string_command(char *command_string) {
     return command;
 }
 
-#endif //FILE_SYSTEM__MSIP_COMMANDS_C
+#endif //SANDBOX_FILE_SYSTEM_COMMANDS_C

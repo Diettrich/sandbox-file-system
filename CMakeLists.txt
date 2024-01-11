@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
-project(File_System__MSIP C)
+project(sandbox_file_system C)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -13,6 +13,6 @@ set(HEADER_FILES
 )
 
 
-add_executable(File_System__MSIP ${SOURCES} ${HEADER_FILES})
+add_executable(sandbox_file_system ${SOURCES} ${HEADER_FILES})
 
-target_include_directories(File_System__MSIP PUBLIC headers/)
+target_include_directories(sandbox_file_system PUBLIC headers/)
