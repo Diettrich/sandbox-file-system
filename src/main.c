@@ -5,7 +5,7 @@
 #include "shell.h"
 
 int main(int argc, char const *argv[]) {
-    struct shell *shell = shell_init();
+    struct Shell *shell = shell_init();
 
     return run_shell(shell);
 }

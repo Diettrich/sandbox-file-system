@@ -11,13 +11,13 @@ char *read_command_line() {
     return line;
 }
 
-short exec_command(struct Command command) {
+short exec_command(struct Command command, struct Shell *shell) {
     switch (command.command_type) {
         case EXIT:
-            return 0;
+            return execute_exit_command();
         case MKDIR:
-            // TODO: add mkdir command
-            printf("mkdir command\n");
+            return execute_mkdir_command(command, shell);
+        case EMPTY:
             return 1;
         case UNKNOWN:
         default:
@@ -31,7 +31,7 @@ void print_prompt() {
     printf("$ ");
 }
 
-int run_shell(struct shell *shell) {
+int run_shell(struct Shell *shell) {
     int status = 0;
     char *command_entry = NULL;
 
@@ -39,9 +39,9 @@ int run_shell(struct shell *shell) {
         print_prompt();
         command_entry = read_command_line();
 
-        struct Command command = parse_string_command(command_entry);
+        struct Command command = parse_command(command_entry);
 
-        status = exec_command(command);
+        status = exec_command(command, shell);
 
         free(command_entry);
         free(command.args);
@@ -50,10 +50,10 @@ int run_shell(struct shell *shell) {
     return 0;
 }
 
-struct shell *shell_init() {
+struct Shell *shell_init() {
     struct File_node *root = create_file_node("/", DIRECTORY_TYPE);
 
-    struct shell *shell = malloc(sizeof(struct shell));
+    struct Shell *shell = malloc(sizeof(struct Shell));
     shell->root = root;
     shell->current_directory = root;
 

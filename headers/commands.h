@@ -6,24 +6,16 @@
 #define SANDBOX_FILE_SYSTEM_COMMANDS_H
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#define TOKEN_BUFFER_SIZE 64
-#define TOKEN_DELIMITERS " \t\r\n\a"
+#include "commands_helper.h"
+#include "shell.h"
+#include "file_node.h"
 
-enum Command_type {
-    UNKNOWN,
-    EXIT,
-    MKDIR,
-};
+extern const char *exit_command;
+extern const char *mkdir_command;
 
-struct Command {
-    enum Command_type command_type;
-    char **args;
-};
+short execute_exit_command();
 
-
-struct Command parse_string_command(char *command_string);
+short execute_mkdir_command(struct Command command, struct Shell *shell);
 
 #endif //SANDBOX_FILE_SYSTEM_COMMANDS_H
