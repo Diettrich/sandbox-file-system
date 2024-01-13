@@ -6,10 +6,14 @@ set(CMAKE_C_STANDARD 11)
 set(SOURCES src/main.c
         src/shell.c
         src/commands.c
+        src/file_node.c
+        headers/file_node.h
 )
 set(HEADER_FILES
         headers/shell.h
         headers/commands.h
+        src/file_node.c
+        headers/file_node.h
 )
 
 

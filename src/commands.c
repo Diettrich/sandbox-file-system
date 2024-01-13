@@ -2,16 +2,12 @@
 // Created by Anouar Zougrar on 7/1/2024.
 //
 
-#ifndef SANDBOX_FILE_SYSTEM_COMMANDS_C
-#define SANDBOX_FILE_SYSTEM_COMMANDS_C
-
-#include <string.h>
-#include <stdlib.h>
-#include <printf.h>
-
 #include "commands.h"
 
 const char *exit_command = "exit";
+
+// TODO: add mkdir command
+const char *mkdir_command = "mkdir";
 
 char **parse_command_args(char *command_string) {
     char **tokens = malloc(TOKEN_BUFFER_SIZE * sizeof(char *));
@@ -52,9 +48,12 @@ char **get_command_args(char **tokens) {
 enum Command_type parse_command_string(char *command_string) {
     if (strcmp(command_string, exit_command) == 0) {
         return EXIT;
-    } else {
-        return UNKNOWN;
+    } else if (strcmp(command_string, mkdir_command) == 0) {
+        return MKDIR;
     }
+
+    return UNKNOWN;
+
 }
 
 struct Command parse_string_command(char *command_string) {
@@ -74,5 +73,3 @@ struct Command parse_string_command(char *command_string) {
 
     return command;
 }
-
-#endif //SANDBOX_FILE_SYSTEM_COMMANDS_C
