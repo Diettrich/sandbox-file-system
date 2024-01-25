@@ -4,6 +4,7 @@
 
 #include "commands_helper.h"
 #include "commands.h"
+#include "utils.h"
 
 struct Command parse_command(char *command_string) {
     char **tokens = get_line_tokens(command_string);
@@ -52,22 +53,5 @@ char **get_command_args(char **tokens) {
 }
 
 char **get_line_tokens(char *command_string) {
-    char **tokens = malloc(TOKEN_BUFFER_SIZE * sizeof(char *));
-    char *single_token = strsep(&command_string, TOKEN_DELIMITERS);
-    unsigned short token_position = 0;
-
-    // TODO: add reallocation when token_position exceeds TOKEN_BUFFER_SIZE
-    while (single_token != NULL && strcmp(single_token, "") != 0) {
-        if (token_position == TOKEN_BUFFER_SIZE) {
-            printf("token buffer size exceeded\n");
-            exit(1);
-        }
-
-        tokens[token_position] = single_token;
-        single_token = strsep(&command_string, TOKEN_DELIMITERS);
-        token_position++;
-    }
-
-    tokens[token_position] = NULL;
-    return tokens;
+    return get_tokens(command_string, TOKEN_DELIMITERS, TOKEN_BUFFER_SIZE);
 }
