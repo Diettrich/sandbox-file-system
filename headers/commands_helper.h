@@ -16,6 +16,8 @@ enum Command_type {
     EMPTY,
     EXIT,
     MKDIR,
+    CD,
+    LS,
 };
 
 struct Command {

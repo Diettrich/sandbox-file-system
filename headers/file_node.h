@@ -41,5 +41,13 @@ struct File_node *append_child(struct File_node *parent, struct File_node *child
 /** Returns NULL on error **/
 struct File_node *remove_node(struct File_node *node);
 
+/* Returns the children of the given Node */
+/** Returns NULL on error **/
+struct File_node **get_children_list(struct File_node *parent);
+
+/* Returns the number of children of the given Node */
+/** Returns -1 on error **/
+int get_children_count(struct File_node *parent);
+
 
 #endif //SANDBOX_FILE_SYSTEM_FILE_NODE_H

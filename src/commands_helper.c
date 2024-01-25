@@ -28,6 +28,10 @@ enum Command_type get_command_type(char *command_string) {
         return EXIT;
     } else if (strcmp(command_string, mkdir_command) == 0) {
         return MKDIR;
+    } else if (strcmp(command_string, cd_command) == 0) {
+        return CD;
+    } else if (strcmp(command_string, ls_command) == 0) {
+        return LS;
     }
 
     return UNKNOWN;

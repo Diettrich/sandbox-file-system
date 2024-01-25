@@ -17,6 +17,10 @@ short exec_command(struct Command command, struct Shell *shell) {
             return execute_exit_command();
         case MKDIR:
             return execute_mkdir_command(command, shell);
+        case CD:
+            return execute_cd_command(command, shell);
+        case LS:
+            return execute_ls_command(command, shell);
         case EMPTY:
             return 1;
         case UNKNOWN:

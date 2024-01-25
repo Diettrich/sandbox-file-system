@@ -61,3 +61,39 @@ struct File_node *append_child(struct File_node *parent, struct File_node *child
 
     return child;
 }
+
+int get_children_count(struct File_node *parent) {
+    if (parent == NULL) {
+        return -1;
+    }
+
+    struct File_node *current_child = parent->children;
+    unsigned short children_count = 0;
+
+    while (current_child != NULL) {
+        current_child = current_child->next;
+        children_count++;
+    }
+
+    return children_count;
+}
+
+struct File_node **get_children_list(struct File_node *parent) {
+    if (parent == NULL) {
+        return NULL;
+    }
+
+    const int children_count = get_children_count(parent);
+    struct File_node **children_list = malloc((children_count + 1) * sizeof(struct File_node *));
+    struct File_node **children_list_ptr = children_list;
+    struct File_node *current_child = parent->children;
+
+    while (current_child != NULL) {
+        *children_list_ptr = current_child;
+        children_list_ptr++;
+        current_child = current_child->next;
+    }
+
+    *children_list_ptr = NULL;
+    return children_list;
+}
