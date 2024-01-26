@@ -47,5 +47,9 @@ struct File_node **get_children_list(struct File_node *parent);
 /** Returns -1 on error **/
 int get_children_count(struct File_node *parent);
 
+/* Returns the child of the given Node with the given name */
+/** Returns NULL on error **/
+struct File_node *get_child(struct File_node *parent, char *child_name);
+
 
 #endif //SANDBOX_FILE_SYSTEM_FILE_NODE_H

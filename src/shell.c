@@ -26,6 +26,8 @@ short exec_command(struct Command command, struct Shell *shell) {
             return execute_cd_command(command, shell);
         case LS:
             return execute_ls_command(command, shell);
+        case PWD:
+            return execute_pwd_command(command, shell);
         case EMPTY:
             return 1;
         case UNKNOWN:
@@ -52,6 +54,9 @@ int run_shell(struct Shell *shell) {
 
         status = exec_command(command, shell);
 
+        // printf("\n-- debug tree --\n");
+        // print_fs_tree(shell->root_directory, 0);
+
         free(command_entry);
         free(command.args);
     } while (status == 1);
@@ -63,7 +68,7 @@ struct Shell *shell_init() {
     struct File_node *root = create_file_node("/", DIRECTORY_TYPE);
 
     struct Shell *shell = malloc(sizeof(struct Shell));
-    shell->root = root;
+    shell->root_directory = root;
     shell->current_directory = root;
 
     return shell;

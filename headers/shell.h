@@ -10,7 +10,7 @@
 #define READLINE_BUF_SIZE 1024
 
 struct Shell {
-    struct File_node *root;
+    struct File_node *root_directory;
     struct File_node *current_directory;
 
 };

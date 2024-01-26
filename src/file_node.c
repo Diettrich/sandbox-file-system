@@ -3,6 +3,7 @@
 //
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "file_node.h"
 
@@ -10,7 +11,8 @@ struct File_node *create_file_node(char *name, enum File_type file_type) {
     struct File_node *file_node = malloc(sizeof(struct File_node));
     struct File_data *file_data = malloc(sizeof(struct File_data));
 
-    file_data->name = name;
+    file_data->name = malloc(strlen(name) + 1);
+    strcpy(file_data->name, name);
     file_node->file_data = file_data;
     file_node->file_type = file_type;
     file_node->parent = NULL;
@@ -98,4 +100,22 @@ struct File_node **get_children_list(struct File_node *parent) {
 
     *children_list_ptr = NULL;
     return children_list;
+}
+
+struct File_node *get_child(struct File_node *parent, char *child_name) {
+    if (parent == NULL || child_name == NULL) {
+        return NULL;
+    }
+
+    struct File_node *current_child = parent->children;
+
+    while (current_child != NULL) {
+        if (strcmp(current_child->file_data->name, child_name) == 0) {
+            return current_child;
+        }
+
+        current_child = current_child->next;
+    }
+
+    return NULL;
 }

@@ -10,8 +10,11 @@
 
 struct Path *create_path(char *path_string) {
     struct Path *path = malloc(sizeof(struct Path));
-    path->string_path = malloc(strlen(path_string) + 1);
-    strcpy(path->string_path, path_string);
+
+    char *path_string_copy = malloc(sizeof(char) * strlen(path_string));
+    strcpy(path_string_copy, path_string);
+
+    path->string_path = path_string_copy;
     path->is_absolute = (short) (path_string[0] == '/');
     path->path_tokens = get_tokens(path_string, DEFAULT_PATH_SEPARATOR, PATH_TOKENS_MAX_LENGTH);
 
@@ -19,7 +22,7 @@ struct Path *create_path(char *path_string) {
 }
 
 void destroy_path(struct Path *path) {
-    free(path->string_path);
     free(path->path_tokens);
+    free(path->string_path);
     free(path);
 }

@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <printf.h>
 
 #include "commands_helper.h"
 #include "commands.h"
@@ -11,6 +12,7 @@
 
 struct Command parse_command(char *command_string) {
     char **tokens = get_line_tokens(command_string);
+
     struct Command command;
 
     if (tokens[0] == NULL) {
@@ -36,6 +38,8 @@ enum Command_type get_command_type(char *command_string) {
         return CD;
     } else if (strcmp(command_string, ls_command) == 0) {
         return LS;
+    } else if (strcmp(command_string, pwd_command) == 0) {
+        return PWD;
     }
 
     return UNKNOWN;
