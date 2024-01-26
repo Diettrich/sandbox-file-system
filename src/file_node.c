@@ -2,6 +2,8 @@
 // Created by Anouar Zougrar on 11/1/2024.
 //
 
+#include <stdlib.h>
+
 #include "file_node.h"
 
 struct File_node *create_file_node(char *name, enum File_type file_type) {

@@ -2,7 +2,12 @@
 // Created by Anouar Zougrar on 8/12/2023.
 //
 
+#include <printf.h>
+#include <stdlib.h>
+
 #include "shell.h"
+#include "commands_helper.h"
+#include "commands.h"
 
 char *read_command_line() {
     size_t buffer_size = READLINE_BUF_SIZE;

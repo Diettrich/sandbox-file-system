@@ -5,12 +5,7 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#include <printf.h>
-#include <stdlib.h>
-
 #include "file_node.h"
-#include "commands_helper.h"
-#include "commands.h"
 
 #define READLINE_BUF_SIZE 1024
 

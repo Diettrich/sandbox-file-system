@@ -8,6 +8,7 @@ set(SOURCES src/main.c
         src/commands.c
         src/file_node.c
         src/commands_helper.c
+        src/path.c
         src/utils.c
 )
 set(HEADER_FILES
@@ -15,6 +16,7 @@ set(HEADER_FILES
         headers/commands.h
         headers/file_node.h
         headers/commands_helper.h
+        headers/path.h
         headers/utils.h
 )
 

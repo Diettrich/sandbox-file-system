@@ -8,23 +8,6 @@
 #define TOKEN_BUFFER_SIZE 64
 #define TOKEN_DELIMITERS " \t\r\n\a"
 
-#include <stdlib.h>
-#include <string.h>
-
-enum Command_type {
-    UNKNOWN,
-    EMPTY,
-    EXIT,
-    MKDIR,
-    CD,
-    LS,
-};
-
-struct Command {
-    enum Command_type command_type;
-    char **args;
-};
-
 
 struct Command parse_command(char *command_string);
 

@@ -2,6 +2,10 @@
 // Created by Anouar Zougrar on 26/1/2024.
 //
 
+#include<stdlib.h>
+#include<string.h>
+#include<stdio.h>
+
 #include "utils.h"
 
 char **get_tokens(char *string, char *delimiters, unsigned short buffer_size) {

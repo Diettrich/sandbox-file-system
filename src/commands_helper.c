@@ -2,6 +2,9 @@
 // Created by Anouar Zougrar on 13/1/2024.
 //
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "commands_helper.h"
 #include "commands.h"
 #include "utils.h"

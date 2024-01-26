@@ -5,8 +5,6 @@
 #ifndef SANDBOX_FILE_SYSTEM_FILE_NODE_H
 #define SANDBOX_FILE_SYSTEM_FILE_NODE_H
 
-#include <stdlib.h>
-
 enum File_type {
     FILE_TYPE,
     DIRECTORY_TYPE,

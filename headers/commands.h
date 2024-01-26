@@ -5,11 +5,21 @@
 #ifndef SANDBOX_FILE_SYSTEM_COMMANDS_H
 #define SANDBOX_FILE_SYSTEM_COMMANDS_H
 
-#include <stdio.h>
-
-#include "commands_helper.h"
 #include "shell.h"
-#include "file_node.h"
+
+enum Command_type {
+    UNKNOWN,
+    EMPTY,
+    EXIT,
+    MKDIR,
+    CD,
+    LS,
+};
+
+struct Command {
+    enum Command_type command_type;
+    char **args;
+};
 
 extern const char *exit_command;
 extern const char *mkdir_command;

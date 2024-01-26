@@ -2,6 +2,10 @@
 // Created by Anouar Zougrar on 7/1/2024.
 //
 
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "commands.h"
 
 const char *exit_command = "exit";
