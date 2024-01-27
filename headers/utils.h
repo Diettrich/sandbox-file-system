@@ -5,6 +5,8 @@
 #ifndef SANDBOX_FILE_SYSTEM_UTILS_H
 #define SANDBOX_FILE_SYSTEM_UTILS_H
 
+#define MAX_FILE_NAME_LENGTH 255
+
 
 /*
  * @param string: the string to be split into tokens, it is modified
@@ -20,5 +22,20 @@
 char **get_tokens(char *string, char *delimiters, unsigned short buffer_size);
 
 char *join_tokens(char **tokens, char *separator);
+
+/*
+ * @param name: the name to be validated
+ *
+ * This function validates a file node name.
+ * It returns 1 if the name is valid, 0 otherwise.
+ *
+ * A valid name is a string that contains only:
+ * - letters
+ * - numbers
+ * - underscores
+ * - dots
+ * - dashes
+ */
+short validate_file_node_name(char *name);
 
 #endif //SANDBOX_FILE_SYSTEM_UTILS_H

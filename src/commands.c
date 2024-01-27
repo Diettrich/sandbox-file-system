@@ -10,6 +10,7 @@
 #include "commands.h"
 #include "path.h"
 #include "file_path_utils.h"
+#include "utils.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantFunctionResult"
@@ -33,6 +34,15 @@ short execute_mkdir_command(struct Command command, struct Shell *shell) {
     // TODO: handle mkdir options (e.g. -p)
 
     int args_position = 0;
+
+    while (command.args[args_position] != NULL) {
+        if (!validate_file_node_name(command.args[args_position])) {
+            return 1;
+        }
+        args_position++;
+    }
+
+    args_position = 0;
 
     while (command.args[args_position] != NULL) {
         struct File_node *new_directory = create_file_node(command.args[args_position], DIRECTORY_TYPE);

@@ -50,3 +50,11 @@ and exit have been re-implemented successfully. Additionally, several modules ha
   string
   into tokens and join tokens into a string.
 
+##### today's work:
+
+- fix(commands): fix the bug of the `pwd` command on root directory.
+- rename(commands_helper): rename the `commands_helper.c` to `commands_parser.c` and `commands_helper.h` to
+  `commands_parser.h`.
+- feat(shell): upgrade the `print_prompt` function to print the current working directory, debug user and debug host.
+- feat(utils): add the `validate_file_node_name` function to validate the name of a file node.
+

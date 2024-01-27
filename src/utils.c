@@ -51,3 +51,27 @@ char *join_tokens(char **tokens, char *separator) {
 
     return joined_string;
 }
+
+short validate_file_node_name(char *name) {
+    const size_t name_length = strlen(name);
+    if (name_length > MAX_FILE_NAME_LENGTH) {
+        printf("FILE NAME ERROR: file name exceeds maximum length\n");
+        return 0;
+    }
+
+    for (int i = 0; i < name_length; ++i) {
+        const char current_char = name[i];
+        short is_numeric = (short) (current_char >= (signed char) 0x30 && current_char <= (signed char) 0x39);
+        short is_uppercase_letter = (short) (current_char >= (signed char) 0x41 && current_char <= (signed char) 0x5A);
+        short is_lowercase_letter = (short) (current_char >= (signed char) 0x61 && current_char <= (signed char) 0x7A);
+        short is_allowed_special_char = (short) (current_char == (signed char) 0x2E ||
+                                                 current_char == (signed char) 0x5F ||
+                                                 current_char == (signed char) 0x2D);
+        if (!(is_numeric || is_uppercase_letter || is_lowercase_letter || is_allowed_special_char)) {
+            printf("FILE NAME ERROR: file name contains invalid characters\n");
+            return 0;
+        }
+    }
+
+    return 1;
+}
