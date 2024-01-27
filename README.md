@@ -1,6 +1,6 @@
 # Sandbox file system emulator - C
 
-### School project - Data structure - ENSMR (ex ENIM) - MSIP - 2019/2020
+### School project - Data structure - ENSMR (ex ENIM) - MSIP - 2020/2021
 
 ## Introduction
 
@@ -16,6 +16,9 @@ create a file system emulator with basic commands, such as:
 - `cat`
 - `pwd`
 - `tree`
+
+for more information/context, please refer to
+the [project notes](https://github.com/Diettrich/sandbox-file-system/blob/master/note.md).
 
 ## TODO
 
