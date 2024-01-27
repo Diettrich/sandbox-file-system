@@ -7,7 +7,7 @@ set(SOURCES src/main.c
         src/shell.c
         src/commands.c
         src/file_node.c
-        src/commands_helper.c
+        src/commands_parser.c
         src/path.c
         src/utils.c
         src/file_path_utils.c
@@ -16,7 +16,7 @@ set(HEADER_FILES
         headers/shell.h
         headers/commands.h
         headers/file_node.h
-        headers/commands_helper.h
+        headers/commands_parser.h
         headers/path.h
         headers/utils.h
         headers/file_path_utils.h

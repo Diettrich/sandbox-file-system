@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #include "shell.h"
-#include "commands_helper.h"
+#include "commands_parser.h"
 #include "commands.h"
 
 char *read_command_line() {
