@@ -37,9 +37,13 @@ short exec_command(struct Command command, struct Shell *shell) {
     }
 }
 
-void print_prompt() {
-    // TODO print prompt (current directory) to function
-    printf("$ ");
+void print_prompt(struct Shell *shell) {
+    const char *user = "DEBUG_ROOT";
+    const char *host = "DEBUG_HOST";
+
+    char *file_node_name = shell->current_directory->file_data->name;
+
+    printf("%s@%s:%s$ ", user, host, file_node_name);
 }
 
 int run_shell(struct Shell *shell) {
@@ -47,7 +51,7 @@ int run_shell(struct Shell *shell) {
     char *command_entry = NULL;
 
     do {
-        print_prompt();
+        print_prompt(shell);
         command_entry = read_command_line();
 
         struct Command command = parse_command(command_entry);
