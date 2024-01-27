@@ -65,10 +65,16 @@ struct Path *get_path_from_file_node(struct File_node *file_node) {
     }
 
     char *path_string = join_tokens(path_tokens + 1, DEFAULT_PATH_SEPARATOR);
+    char *absolute_path_string = NULL;
 
-    char *absolute_path_string = malloc(sizeof(char) * (strlen(path_string) + 1));
-    strcpy(absolute_path_string, DEFAULT_PATH_SEPARATOR);
-    strcat(absolute_path_string, path_string);
+    if (path_string == NULL) {
+        absolute_path_string = malloc(sizeof(char) * 2);
+        strcpy(absolute_path_string, DEFAULT_PATH_SEPARATOR);
+    } else {
+        absolute_path_string = malloc(sizeof(char) * (strlen(path_string) + 1));
+        strcpy(absolute_path_string, DEFAULT_PATH_SEPARATOR);
+        strcat(absolute_path_string, path_string);
+    }
 
     struct Path *path = create_path(absolute_path_string);
 
