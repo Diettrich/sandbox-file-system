@@ -43,26 +43,8 @@ struct File_node *get_file_node_from_path(struct Path *path, struct Shell *shell
 }
 
 struct Path *get_path_from_file_node(struct File_node *file_node) {
-    int path_tokens_count = 0;
-
-    struct File_node *current_node = file_node;
-
-    while (current_node != NULL) {
-        path_tokens_count++;
-        current_node = current_node->parent;
-    }
-
-    char **path_tokens = malloc(sizeof(char *) * path_tokens_count);
-
-    current_node = file_node;
-
-    int path_token_position = path_tokens_count - 1;
-
-    while (current_node != NULL) {
-        path_tokens[path_token_position] = current_node->file_data->name;
-        path_token_position--;
-        current_node = current_node->parent;
-    }
+    char **path_tokens = get_path_tokens(file_node);
+    if (path_tokens == NULL) return NULL;
 
     char *path_string = join_tokens(path_tokens + 1, DEFAULT_PATH_SEPARATOR);
     char *absolute_path_string = NULL;
@@ -79,6 +61,41 @@ struct Path *get_path_from_file_node(struct File_node *file_node) {
     struct Path *path = create_path(absolute_path_string);
 
     free(path_tokens);
-
     return path;
+}
+
+char **get_path_tokens(struct File_node *file_node) {
+    int path_tokens_count = get_path_tokens_count(file_node);
+    char **path_tokens = malloc(sizeof(char *) * (path_tokens_count + 1));
+
+    if (path_tokens == NULL) {
+        printf("PATH TOKENS ERROR: could not allocate memory\n");
+        return NULL;
+    }
+
+    struct File_node *current_node = file_node;
+    int path_token_position = path_tokens_count - 1;
+
+    while (current_node != NULL) {
+        path_tokens[path_token_position] = current_node->file_data->name;
+        path_token_position--;
+        current_node = current_node->parent;
+    }
+    
+    path_tokens[path_tokens_count] = NULL;
+
+    return path_tokens;
+}
+
+int get_path_tokens_count(struct File_node *file_node) {
+    int path_tokens_count = 0;
+
+    struct File_node *current_node = file_node;
+
+    while (current_node != NULL) {
+        path_tokens_count++;
+        current_node = current_node->parent;
+    }
+
+    return path_tokens_count;
 }

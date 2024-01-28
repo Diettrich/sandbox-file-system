@@ -10,7 +10,7 @@
 #include "commands.h"
 #include "path.h"
 #include "file_path_utils.h"
-#include "utils.h"
+#include "command_utils.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantFunctionResult"
@@ -31,30 +31,14 @@ short execute_mkdir_command(struct Command command, struct Shell *shell) {
         return 1;
     }
 
-    // TODO: handle mkdir options (e.g. -p)
+    if (!validate_mkdir_args(command.args)) {
+        return 1;
+    }
 
     int args_position = 0;
 
     while (command.args[args_position] != NULL) {
-        if (!validate_file_node_name(command.args[args_position])) {
-            return 1;
-        }
-        args_position++;
-    }
-
-    args_position = 0;
-
-    while (command.args[args_position] != NULL) {
-        struct File_node *new_directory = create_file_node(command.args[args_position], DIRECTORY_TYPE);
-        struct File_node *current_directory = shell->current_directory;
-
-        new_directory = append_child(current_directory, new_directory);
-
-        if (new_directory == NULL) {
-            printf("mkdir: cannot create directory '%s'\n", command.args[args_position]);
-            return 0;
-        }
-
+        create_directory(command.args[args_position], shell->current_directory);
         args_position++;
     }
 
@@ -92,8 +76,6 @@ short execute_cd_command(struct Command command, struct Shell *shell) {
 }
 
 short execute_ls_command(struct Command command, struct Shell *shell) {
-    // TODO: handle ls args
-
     if (command.args != NULL && command.args[0] != NULL) {
         printf("ls: too many arguments\n");
         return 1;
@@ -124,10 +106,14 @@ short execute_pwd_command(struct Command command, struct Shell *shell) {
 
     struct Path *path = get_path_from_file_node(shell->current_directory);
 
+    if (path == NULL) {
+        printf("pwd: error while getting path\n");
+        return 0;
+    }
+
     printf("%s\n", path->string_path);
 
     destroy_path(path);
-
     return 1;
 }
 

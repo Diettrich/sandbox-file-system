@@ -11,6 +11,7 @@ set(SOURCES src/main.c
         src/path.c
         src/utils.c
         src/file_path_utils.c
+        src/command_utils.c
 )
 set(HEADER_FILES
         headers/shell.h
@@ -20,6 +21,7 @@ set(HEADER_FILES
         headers/path.h
         headers/utils.h
         headers/file_path_utils.h
+        headers/command_utils.h
 )
 
 

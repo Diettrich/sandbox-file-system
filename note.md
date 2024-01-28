@@ -57,4 +57,5 @@ and exit have been re-implemented successfully. Additionally, several modules ha
   `commands_parser.h`.
 - feat(shell): upgrade the `print_prompt` function to print the current working directory, debug user and debug host.
 - feat(utils): add the `validate_file_node_name` function to validate the name of a file node.
+- feat(command_utils): Add mkdir validation & refactor & mkdir and pwd basic error handling
 

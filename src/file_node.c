@@ -3,15 +3,31 @@
 //
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "file_node.h"
 
 struct File_node *create_file_node(char *name, enum File_type file_type) {
     struct File_node *file_node = malloc(sizeof(struct File_node));
+    if (file_node == NULL) {
+        printf("Error allocating memory for file node\n");
+        return NULL;
+    }
     struct File_data *file_data = malloc(sizeof(struct File_data));
+    if (file_data == NULL) {
+        printf("Error allocating memory for file data\n");
+        free(file_node);
+        return NULL;
+    }
 
     file_data->name = malloc(strlen(name) + 1);
+    if (file_data->name == NULL) {
+        printf("Error allocating memory for file name\n");
+        free(file_node);
+        free(file_data);
+        return NULL;
+    }
     strcpy(file_data->name, name);
     file_node->file_data = file_data;
     file_node->file_type = file_type;
